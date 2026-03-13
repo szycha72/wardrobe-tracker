@@ -1,5 +1,5 @@
 import streamlit as st
-from components.dialogs import dialog_sprzedazy, dialog_edycji, dialog_usuwania
+from components.dialogs import dialog_sprzedazy, dialog_edycji, dialog_usuwania, dialog_wystawienia
 
 
 def pokaz_liste():
@@ -18,7 +18,7 @@ def pokaz_liste():
 
     col_filtr, col_sort, col_kolejnosc = st.columns(3)
     with col_filtr:
-        filtr = st.selectbox("Status", ["Wszystkie", "Wystawione", "Sprzedane"])
+        filtr = st.selectbox("Status", ["Wszystkie","Kupione", "Wystawione", "Sprzedane"])
     with col_sort:
         sortuj_po = st.selectbox(
             "Sortuj po",
@@ -29,7 +29,9 @@ def pokaz_liste():
 
     wyniki = df.copy()
 
-    if filtr == "Wystawione":
+    if filtr == "Kupione":
+        wyniki = wyniki[wyniki["status"] == "kupiony"]
+    elif filtr == "Wystawione":
         wyniki = wyniki[wyniki["status"] == "wystawiony"]
     elif filtr == "Sprzedane":
         wyniki = wyniki[wyniki["status"] == "sprzedany"]
@@ -74,9 +76,12 @@ def pokaz_liste():
                     st.caption(produkt["opis"])
 
             with col2:
-                if produkt["status"] == "wystawiony":
-                    st.markdown("🟡 Wystawiony")
+                if produkt["status"] == "kupiony":
+                    st.markdown("🔵 Kupiony")
                     st.write(f"**{produkt['cena_zakupu']} zł**")
+                elif produkt["status"] == "wystawiony":
+                    st.markdown("🟡 Wystawiony")
+                    st.write(f"**{produkt.get('cena_wystawienia', produkt['cena_zakupu'])} zł**")
                 else:
                     st.markdown("🟢 Sprzedany")
                     st.write(f"**{produkt.get('cena_sprzedazy', '?')} zł**")
@@ -85,7 +90,10 @@ def pokaz_liste():
                     st.caption(f"📍 {produkt.get('gdzie_sprzedane', '')}")
 
             with col3:
-                if produkt["status"] == "wystawiony":
+                if produkt["status"] == "kupiony":
+                    if st.button("📢 Wystaw", key=f"wystaw_{produkt['id']}"):
+                        dialog_wystawienia(produkt.to_dict())
+                elif produkt["status"] == "wystawiony":
                     if st.button("✅ Sprzedaj", key=f"sprzedaj_{produkt['id']}"):
                         dialog_sprzedazy(produkt.to_dict())
 

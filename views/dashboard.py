@@ -14,13 +14,16 @@ def pokaz_dashboard():
 
     sprzedane = df[df["status"] == "sprzedany"].copy()
     wystawione = df[df["status"] == "wystawiony"].copy()
+    kupione = df[df["status"] == "kupiony"].copy()
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Wszystkich produktów", len(df))
+        st.metric("Wszystkich", len(df))
     with col2:
-        st.metric("Wystawionych", len(wystawione))
+        st.metric("Kupionych", len(kupione))
     with col3:
+        st.metric("Wystawionych", len(wystawione))
+    with col4:
         st.metric("Sprzedanych", len(sprzedane))
 
     if sprzedane.empty:
@@ -101,13 +104,14 @@ def pokaz_dashboard():
     st.plotly_chart(fig, use_container_width=True)
     st.dataframe(wykres_df, use_container_width=True, hide_index=True)
 
-    if not wystawione.empty:
+    if not wystawione.empty or not kupione.empty:
         st.divider()
-        st.subheader("Wystawione produkty")
-        zamrozony_kapital = wystawione["cena_zakupu"].sum()
+        st.subheader("Niesprzedane produkty")
+        niesprzedane = df[df["status"] != "sprzedany"]
+        zamrozony_kapital = niesprzedane["cena_zakupu"].sum()
         col9, col10 = st.columns(2)
         with col9:
-            st.metric("Wystawionych produktów", len(wystawione))
+            st.metric("Kupionych + wystawionych", len(niesprzedane))
         with col10:
             st.metric("Zamrożony kapitał", f"{zamrozony_kapital:.0f} zł",
                 help="Łączna kwota wydana na produkty które jeszcze nie zostały sprzedane")

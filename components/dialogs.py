@@ -46,8 +46,12 @@ def dialog_sprzedazy(produkt):
 
 @st.dialog("Edytuj produkt")
 def dialog_edycji(produkt):
+    st.write(f"**{produkt['nazwa']}**")
+    st.caption(f"Status: {produkt['status']}")
+
+    st.subheader("Informacje o zakupie")
     nazwa = st.text_input("Nazwa produktu", value=produkt["nazwa"])
-    
+
     col1, col2 = st.columns(2)
     with col1:
         cena_zakupu = st.number_input(
@@ -63,15 +67,8 @@ def dialog_edycji(produkt):
             index=["Kurtki", "Sukienki", "Spodnie", "Buty", "Torebki", "Inne"].index(produkt["kategoria"])
         )
 
-    opis = st.text_area(
-        "Opis",
-        value=produkt.get("opis", ""),
-        height=80
-    )
-    miejsce_zakupu = st.text_input(
-        "Gdzie kupiony",
-        value=produkt.get("miejsce_zakupu", "")
-    )
+    opis = st.text_area("Opis", value=produkt.get("opis", ""), height=80)
+    miejsce_zakupu = st.text_input("Gdzie kupiony", value=produkt.get("miejsce_zakupu", ""))
     dowod_zakupu = st.radio(
         "Dowód zakupu",
         ["Paragon", "Faktura"],
@@ -86,27 +83,45 @@ def dialog_edycji(produkt):
         ).date()
     )
 
-    if produkt.get("status") == "sprzedany":
-        st.divider()
-        st.caption("Informacje o sprzedaży")
-        cena_sprzedazy = st.number_input(
-            "Cena sprzedaży (zł)",
-            min_value=0.0,
-            step=1.0,
-            value=float(produkt.get("cena_sprzedazy", 0.0))
-        )
-        gdzie_sprzedane = st.selectbox(
-            "Gdzie sprzedane",
-            ["Vinted", "OLX", "Allegro", "Inne"],
-            index=["Vinted", "OLX", "Allegro", "Inne"].index(produkt.get("gdzie_sprzedane", "Inne"))
-        )
-        data_sprzedazy = st.date_input(
-            "Data sprzedaży",
-            value=datetime.datetime.strptime(
-                produkt.get("data_sprzedazy", datetime.date.today().strftime("%d.%m.%Y")),
-                "%d.%m.%Y"
-            ).date()
-        )
+    st.divider()
+    st.subheader("Informacje o wystawieniu")
+    cena_wystawienia = st.number_input(
+        "Cena wystawienia (zł)",
+        min_value=0.0,
+        step=1.0,
+        value=float(produkt.get("cena_wystawienia", 0.0))
+    )
+    data_wystawienia_raw = produkt.get("data_wystawienia", None)
+    if not isinstance(data_wystawienia_raw, str):
+        data_wystawienia_raw = None
+    data_wystawienia = st.date_input(
+        "Data wystawienia",
+        value=datetime.datetime.strptime(data_wystawienia_raw, "%d.%m.%Y").date() if data_wystawienia_raw else datetime.date.today()
+    )
+
+    st.divider()
+    st.subheader("Informacje o sprzedaży")
+    cena_sprzedazy = st.number_input(
+        "Cena sprzedaży (zł)",
+        min_value=0.0,
+        step=1.0,
+        value=float(produkt.get("cena_sprzedazy", 0.0))
+    )
+    gdzie_sprzedane_wartosc = produkt.get("gdzie_sprzedane", "Inne")
+    if not isinstance(gdzie_sprzedane_wartosc, str):
+        gdzie_sprzedane_wartosc = "Inne"
+    gdzie_sprzedane = st.selectbox(
+        "Gdzie sprzedane",
+        ["Vinted", "OLX", "Inne"],
+        index=["Vinted", "OLX", "Inne"].index(gdzie_sprzedane_wartosc)
+    )
+    data_sprzedazy_raw = produkt.get("data_sprzedazy", None)
+    if not isinstance(data_sprzedazy_raw, str):
+        data_sprzedazy_raw = None
+    data_sprzedazy = st.date_input(
+        "Data sprzedaży",
+        value=datetime.datetime.strptime(data_sprzedazy_raw, "%d.%m.%Y").date() if data_sprzedazy_raw else datetime.date.today()
+    )
 
     col_ok, col_anuluj = st.columns(2)
     with col_ok:
@@ -125,13 +140,13 @@ def dialog_edycji(produkt):
                     "opis": opis,
                     "miejsce_zakupu": miejsce_zakupu,
                     "dowod_zakupu": dowod_zakupu,
-                    "data_zakupu": data_zakupu.strftime("%d.%m.%Y")
+                    "data_zakupu": data_zakupu.strftime("%d.%m.%Y"),
+                    "cena_wystawienia": cena_wystawienia,
+                    "data_wystawienia": data_wystawienia.strftime("%d.%m.%Y"),
+                    "cena_sprzedazy": cena_sprzedazy,
+                    "gdzie_sprzedane": gdzie_sprzedane,
+                    "data_sprzedazy": data_sprzedazy.strftime("%d.%m.%Y")
                 }
-                if produkt.get("status") == "sprzedany":
-                    dane["cena_sprzedazy"] = cena_sprzedazy
-                    dane["gdzie_sprzedane"] = gdzie_sprzedane
-                    dane["data_sprzedazy"] = data_sprzedazy.strftime("%d.%m.%Y")
-
                 aktualizuj_produkt(produkt["id"], dane)
                 maska = st.session_state.products_df["id"] == produkt["id"]
                 for klucz, wartosc in dane.items():
@@ -153,6 +168,41 @@ def dialog_usuwania(produkt):
             maska = st.session_state.products_df["id"] != produkt["id"]
             st.session_state.products_df = st.session_state.products_df[maska]
             st.rerun()
+    with col_anuluj:
+        if st.button("✖ Anuluj", use_container_width=True):
+            st.rerun()
+
+@st.dialog("Wystaw produkt")
+def dialog_wystawienia(produkt):
+    st.write(f"**{produkt['nazwa']}**")
+    st.caption(f"Cena zakupu: {produkt['cena_zakupu']} zł")
+    
+    cena_wystawienia = st.number_input(
+        "Cena wystawienia (zł)",
+        min_value=0.0,
+        step=1.0
+    )
+    data_wystawienia = st.date_input(
+        "Data wystawienia",
+        value=datetime.date.today()
+    )
+    
+    col_ok, col_anuluj = st.columns(2)
+    with col_ok:
+        if st.button("📢 Wystaw", use_container_width=True):
+            if cena_wystawienia <= 0:
+                st.error("Podaj cenę wystawienia!")
+            else:
+                dane = {
+                    "status": "wystawiony",
+                    "cena_wystawienia": cena_wystawienia,
+                    "data_wystawienia": data_wystawienia.strftime("%d.%m.%Y")
+                }
+                aktualizuj_produkt(produkt["id"], dane)
+                maska = st.session_state.products_df["id"] == produkt["id"]
+                for klucz, wartosc in dane.items():
+                    st.session_state.products_df.loc[maska, klucz] = wartosc
+                st.rerun()
     with col_anuluj:
         if st.button("✖ Anuluj", use_container_width=True):
             st.rerun()

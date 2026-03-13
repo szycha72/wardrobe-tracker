@@ -68,7 +68,7 @@ def pokaz_formularz():
                 "opis": opis,
                 "miejsce_zakupu": miejsce_zakupu,
                 "dowod_zakupu": dowod_zakupu,
-                "status": "wystawiony",
+                "status": "kupiony",
                 "data_zakupu": data_zakupu.strftime("%d.%m.%Y"),
                 "timestamp": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                 "timestamp_unix": datetime.datetime.now().timestamp()

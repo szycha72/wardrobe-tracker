@@ -15,11 +15,13 @@ def pokaz_eksport():
 
     zakres = st.radio(
         "Co eksportować?",
-        ["Wszystkie produkty", "Tylko wystawione", "Tylko sprzedane"],
+        ["Wszystkie produkty", "Tylko kupione", "Tylko wystawione", "Tylko sprzedane"],
         horizontal=True
     )
 
-    if zakres == "Tylko wystawione":
+    if zakres == "Tylko kupione":
+        df_eksport = df[df["status"] == "kupiony"].copy()
+    elif zakres == "Tylko wystawione":
         df_eksport = df[df["status"] == "wystawiony"].copy()
     elif zakres == "Tylko sprzedane":
         df_eksport = df[df["status"] == "sprzedany"].copy()
@@ -60,7 +62,7 @@ def pokaz_eksport():
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         df_eksport.to_excel(writer, index=False, sheet_name="Produkty")
 
-        if zakres in ["Tylko sprzedane", "Wszystkie produkty"]:
+        if zakres in ["Tylko sprzedane", "Wszystkie produkty", "Tylko kupione", "Tylko wystawione"]:
             sprzedane = df[df["status"] == "sprzedany"].copy()
             if not sprzedane.empty:
                 sprzedane["zysk"] = sprzedane["cena_sprzedazy"] - sprzedane["cena_zakupu"]
