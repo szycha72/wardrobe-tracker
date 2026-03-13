@@ -38,18 +38,18 @@ def pokaz_dashboard():
     srednia_marza = (laczny_zysk / laczny_przychod * 100) if laczny_przychod > 0 else 0
     sredni_zysk = sprzedane["zysk"].mean()
 
-    col4, col5, col6 = st.columns(3)
-    with col4:
+    col_zysk, col_marza, col_sredni = st.columns(3)
+    with col_zysk:
         st.metric("Łączny zysk", f"{laczny_zysk:.0f} zł")
-    with col5:
+    with col_marza:
         st.metric("Średnia marża", f"{srednia_marza:.0f}%")
-    with col6:
+    with col_sredni:
         st.metric("Średni zysk / produkt", f"{sredni_zysk:.0f} zł")
 
-    col7, col8 = st.columns(2)
-    with col7:
+    col_przychod, col_koszt = st.columns(2)
+    with col_przychod:
         st.metric("Łączny przychód", f"{laczny_przychod:.0f} zł")
-    with col8:
+    with col_koszt:
         st.metric("Łączny koszt zakupu", f"{laczny_koszt:.0f} zł")
 
     st.divider()

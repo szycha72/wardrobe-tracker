@@ -62,23 +62,21 @@ def pokaz_eksport():
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         df_eksport.to_excel(writer, index=False, sheet_name="Produkty")
 
-        if zakres in ["Tylko sprzedane", "Wszystkie produkty", "Tylko kupione", "Tylko wystawione"]:
-            sprzedane = df[df["status"] == "sprzedany"].copy()
-            if not sprzedane.empty:
-                sprzedane["zysk"] = sprzedane["cena_sprzedazy"] - sprzedane["cena_zakupu"]
-                podsumowanie = (
-                    sprzedane.groupby("kategoria")["zysk"]
-                    .agg(["sum", "count", "mean"])
-                    .rename(columns={
-                        "sum": "Łączny zysk (zł)",
-                        "count": "Sprzedanych szt.",
-                        "mean": "Średni zysk (zł)"
-                    })
-                    .reset_index()
-                    .rename(columns={"kategoria": "Kategoria"})
-                )
-                podsumowanie.to_excel(writer, index=False, sheet_name="Podsumowanie")
-
+        sprzedane = df[df["status"] == "sprzedany"].copy()
+        if not sprzedane.empty:
+            sprzedane["zysk"] = sprzedane["cena_sprzedazy"] - sprzedane["cena_zakupu"]
+            podsumowanie = (
+                sprzedane.groupby("kategoria")["zysk"]
+                .agg(["sum", "count", "mean"])
+                .rename(columns={
+                    "sum": "Łączny zysk (zł)",
+                    "count": "Sprzedanych szt.",
+                    "mean": "Średni zysk (zł)"
+                })
+                .reset_index()
+                .rename(columns={"kategoria": "Kategoria"})
+            )
+            podsumowanie.to_excel(writer, index=False, sheet_name="Podsumowanie")
     nazwa_pliku = f"wardrobe_tracker_{datetime.date.today().strftime('%d%m%Y')}.xlsx"
     st.download_button(
         label="📥 Pobierz plik XLSX",

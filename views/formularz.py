@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import pandas as pd
 from database import dodaj_produkt
+from config import KATEGORIE, DOWODY_ZAKUPU, FORMAT_DATY
 
 
 def pokaz_formularz():
@@ -23,7 +24,7 @@ def pokaz_formularz():
         with col2:
             kategoria = st.selectbox(
                 "Kategoria",
-                ["Kurtki", "Sukienki", "Spodnie", "Buty", "Torebki", "Inne"]
+                KATEGORIE
             )
 
         data_zakupu = st.date_input(
@@ -44,7 +45,7 @@ def pokaz_formularz():
 
         dowod_zakupu = st.radio(
             "Dowód zakupu",
-            ["Paragon", "Faktura"],
+            DOWODY_ZAKUPU,
             horizontal=True
         )
 
@@ -69,7 +70,7 @@ def pokaz_formularz():
                 "miejsce_zakupu": miejsce_zakupu,
                 "dowod_zakupu": dowod_zakupu,
                 "status": "kupiony",
-                "data_zakupu": data_zakupu.strftime("%d.%m.%Y"),
+                "data_zakupu": data_zakupu.strftime(FORMAT_DATY),
                 "timestamp": datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
                 "timestamp_unix": datetime.datetime.now().timestamp()
             }

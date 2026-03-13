@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
-from database import aktualizuj_produkt, usun_produkt
+from database import aktualizuj_produkt, usun_produkt, aktualizuj_session_state
+from config import KATEGORIE, PLATFORMY, DOWODY_ZAKUPU, FORMAT_DATY
 
 
 @st.dialog("Zapisz sprzedaż")
@@ -19,7 +20,7 @@ def dialog_sprzedazy(produkt):
     )
     gdzie_sprzedane = st.selectbox(
         "Gdzie sprzedane",
-        ["Vinted", "OLX", "Allegro", "Inne"]
+        PLATFORMY
     )
     
     col_ok, col_anuluj = st.columns(2)
@@ -31,13 +32,11 @@ def dialog_sprzedazy(produkt):
                 dane = {
                     "status": "sprzedany",
                     "cena_sprzedazy": cena_sprzedazy,
-                    "data_sprzedazy": data_sprzedazy.strftime("%d.%m.%Y"),
+                    "data_sprzedazy": data_sprzedazy.strftime(FORMAT_DATY),
                     "gdzie_sprzedane": gdzie_sprzedane
                 }
                 aktualizuj_produkt(produkt["id"], dane)
-                maska = st.session_state.products_df["id"] == produkt["id"]
-                for klucz, wartosc in dane.items():
-                    st.session_state.products_df.loc[maska, klucz] = wartosc
+                aktualizuj_session_state(produkt["id"], dane)
                 st.rerun()
     with col_anuluj:
         if st.button("✖ Anuluj", use_container_width=True):
@@ -63,23 +62,23 @@ def dialog_edycji(produkt):
     with col2:
         kategoria = st.selectbox(
             "Kategoria",
-            ["Kurtki", "Sukienki", "Spodnie", "Buty", "Torebki", "Inne"],
-            index=["Kurtki", "Sukienki", "Spodnie", "Buty", "Torebki", "Inne"].index(produkt["kategoria"])
+            KATEGORIE,
+            index=KATEGORIE.index(produkt["kategoria"])
         )
 
     opis = st.text_area("Opis", value=produkt.get("opis", ""), height=80)
     miejsce_zakupu = st.text_input("Gdzie kupiony", value=produkt.get("miejsce_zakupu", ""))
     dowod_zakupu = st.radio(
         "Dowód zakupu",
-        ["Paragon", "Faktura"],
-        index=["Paragon", "Faktura"].index(produkt.get("dowod_zakupu", "Paragon")),
+        DOWODY_ZAKUPU,
+        index=DOWODY_ZAKUPU.index(produkt.get("dowod_zakupu", "Paragon")),
         horizontal=True
     )
     data_zakupu = st.date_input(
         "Data zakupu",
         value=datetime.datetime.strptime(
-            produkt.get("data_zakupu", datetime.date.today().strftime("%d.%m.%Y")),
-            "%d.%m.%Y"
+            produkt.get("data_zakupu", datetime.date.today().strftime(FORMAT_DATY)),
+            FORMAT_DATY
         ).date()
     )
 
@@ -96,7 +95,7 @@ def dialog_edycji(produkt):
         data_wystawienia_raw = None
     data_wystawienia = st.date_input(
         "Data wystawienia",
-        value=datetime.datetime.strptime(data_wystawienia_raw, "%d.%m.%Y").date() if data_wystawienia_raw else datetime.date.today()
+        value=datetime.datetime.strptime(data_wystawienia_raw, FORMAT_DATY).date() if data_wystawienia_raw else datetime.date.today()
     )
 
     st.divider()
@@ -112,15 +111,15 @@ def dialog_edycji(produkt):
         gdzie_sprzedane_wartosc = "Inne"
     gdzie_sprzedane = st.selectbox(
         "Gdzie sprzedane",
-        ["Vinted", "OLX", "Inne"],
-        index=["Vinted", "OLX", "Inne"].index(gdzie_sprzedane_wartosc)
+        PLATFORMY,
+        index=PLATFORMY.index(gdzie_sprzedane_wartosc)
     )
     data_sprzedazy_raw = produkt.get("data_sprzedazy", None)
     if not isinstance(data_sprzedazy_raw, str):
         data_sprzedazy_raw = None
     data_sprzedazy = st.date_input(
         "Data sprzedaży",
-        value=datetime.datetime.strptime(data_sprzedazy_raw, "%d.%m.%Y").date() if data_sprzedazy_raw else datetime.date.today()
+        value=datetime.datetime.strptime(data_sprzedazy_raw, FORMAT_DATY).date() if data_sprzedazy_raw else datetime.date.today()
     )
 
     col_ok, col_anuluj = st.columns(2)
@@ -140,17 +139,15 @@ def dialog_edycji(produkt):
                     "opis": opis,
                     "miejsce_zakupu": miejsce_zakupu,
                     "dowod_zakupu": dowod_zakupu,
-                    "data_zakupu": data_zakupu.strftime("%d.%m.%Y"),
+                    "data_zakupu": data_zakupu.strftime(FORMAT_DATY),
                     "cena_wystawienia": cena_wystawienia,
-                    "data_wystawienia": data_wystawienia.strftime("%d.%m.%Y"),
+                    "data_wystawienia": data_wystawienia.strftime(FORMAT_DATY),
                     "cena_sprzedazy": cena_sprzedazy,
                     "gdzie_sprzedane": gdzie_sprzedane,
-                    "data_sprzedazy": data_sprzedazy.strftime("%d.%m.%Y")
+                    "data_sprzedazy": data_sprzedazy.strftime(FORMAT_DATY)
                 }
                 aktualizuj_produkt(produkt["id"], dane)
-                maska = st.session_state.products_df["id"] == produkt["id"]
-                for klucz, wartosc in dane.items():
-                    st.session_state.products_df.loc[maska, klucz] = wartosc
+                aktualizuj_session_state(produkt["id"], dane)
                 st.rerun()
     with col_anuluj:
         if st.button("✖ Anuluj", use_container_width=True):
@@ -196,12 +193,10 @@ def dialog_wystawienia(produkt):
                 dane = {
                     "status": "wystawiony",
                     "cena_wystawienia": cena_wystawienia,
-                    "data_wystawienia": data_wystawienia.strftime("%d.%m.%Y")
+                    "data_wystawienia": data_wystawienia.strftime(FORMAT_DATY)
                 }
                 aktualizuj_produkt(produkt["id"], dane)
-                maska = st.session_state.products_df["id"] == produkt["id"]
-                for klucz, wartosc in dane.items():
-                    st.session_state.products_df.loc[maska, klucz] = wartosc
+                aktualizuj_session_state(produkt["id"], dane)
                 st.rerun()
     with col_anuluj:
         if st.button("✖ Anuluj", use_container_width=True):
