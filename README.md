@@ -1,19 +1,21 @@
-# 👗 Wardrobe Tracker
+# 👗 Apka Kingusi
 
-Aplikacja webowa do zarządzania sprzedażą ubrań — zbudowana w Pythonie z użyciem Streamlit i Firebase.
+Aplikacja webowa do zarządzania zakupami i sprzedażą ubrań — zbudowana w Pythonie z użyciem Streamlit i Firebase.
 
 ## O projekcie
 
-Wardrobe Tracker zastępuje arkusz Excel w prowadzeniu ewidencji zakupionych i sprzedanych ubrań. Umożliwia śledzenie stanów magazynowych, obliczanie zysków i eksport danych — wszystko dostępne z poziomu telefonu lub komputera.
+Aplikacja zastępuje arkusz Excel w prowadzeniu ewidencji ubrań. Pozwala śledzić cały cykl życia produktu — od zakupu, przez wystawienie na sprzedaż, aż do finalizacji transakcji. Umożliwia obliczanie zysków i eksport danych — wszystko dostępne z poziomu telefonu lub komputera.
 
 ## Funkcjonalności
 
-- **Dodawanie produktów** — formularz z nazwą, ceną zakupu, kategorią, opisem, miejscem zakupu i dowodem zakupu
+- **Dodawanie produktów** — formularz z nazwą, ceną zakupu, kategorią, datą zakupu, opisem, miejscem zakupu i dowodem zakupu
+- **Trzy statusy produktu** — kupiony → wystawiony → sprzedany, każde przejście rejestruje dodatkowe dane
+- **Wystawianie produktu** — rejestrowanie ceny wystawienia i daty wystawienia
+- **Oznaczanie sprzedaży** — rejestrowanie ceny sprzedaży, daty i platformy sprzedaży (Vinted, OLX)
 - **Lista produktów** — przeglądanie wszystkich produktów z filtrami statusu, wyszukiwarką pełnotekstową i sortowaniem
-- **Oznaczanie sprzedaży** — rejestrowanie ceny sprzedaży, daty i platformy sprzedaży (Vinted, OLX, Allegro)
-- **Edycja i usuwanie** — możliwość edycji wszystkich danych produktu oraz usunięcia go z bazy
+- **Edycja i usuwanie** — możliwość edycji wszystkich danych produktu (zakup, wystawienie, sprzedaż) oraz usunięcia go z bazy
 - **Dashboard** — statystyki sprzedaży: łączny zysk, średnia marża, zysk per kategoria, zamrożony kapitał, wykres sprzedaży w czasie
-- **Eksport do XLSX** — eksport danych do pliku Excel z arkuszem produktów i arkuszem podsumowania
+- **Eksport do XLSX** — eksport danych do pliku Excel z arkuszem produktów i arkuszem podsumowania per kategoria
 
 ## Stack technologiczny
 
@@ -31,6 +33,7 @@ wardrobe-tracker/
 ├── app.py                  # główny plik — nawigacja i inicjalizacja
 ├── database.py             # komunikacja z Firebase Firestore
 ├── firebase_config.py      # konfiguracja połączenia z Firebase
+├── config.py               # stałe aplikacji (kategorie, platformy, format daty)
 ├── requirements.txt        # zależności projektu
 ├── .gitignore
 ├── .streamlit/
@@ -41,7 +44,18 @@ wardrobe-tracker/
 │   ├── dashboard.py        # zakładka z dashboardem i wykresami
 │   └── eksport.py          # zakładka z eksportem do XLSX
 └── components/
-    └── dialogs.py          # modale: sprzedaż, edycja, usuwanie
+    └── dialogs.py          # modale: sprzedaż, wystawienie, edycja, usuwanie
+```
+
+## Przepływ statusów produktu
+
+```
+KUPIONY → WYSTAWIONY → SPRZEDANY
+
+Dodanie produktu:    nazwa, cena zakupu, kategoria, data zakupu, opis,
+                     miejsce zakupu, dowód zakupu
+Wystawienie:         cena wystawienia, data wystawienia
+Sprzedaż:            cena sprzedaży, data sprzedaży, gdzie sprzedane
 ```
 
 ## Uruchomienie lokalne
@@ -54,7 +68,7 @@ wardrobe-tracker/
 
 1. Sklonuj repozytorium:
 ```bash
-git clone https://github.com/TwojaNazwa/wardrobe-tracker.git
+git clone https://github.com/szycha72/wardrobe-tracker
 cd wardrobe-tracker
 ```
 
@@ -88,22 +102,23 @@ streamlit run app.py
 
 ## Deploy na Streamlit Community Cloud
 
-1. Wrzuć kod na GitHub (bez pliku `secrets.toml`)
+1. Wrzuć kod na GitHub 
 2. Zaloguj się na [share.streamlit.io](https://share.streamlit.io) przez konto GitHub
 3. Kliknij **"New app"** → wybierz repozytorium i ustaw `app.py` jako główny plik
 4. W **"Advanced settings"** wklej zawartość `secrets.toml`
 5. Kliknij **"Deploy"**
 
-## Aktualizacja aplikacji
-
-Po wprowadzeniu zmian lokalnie:
-```bash
-git add .
-git commit -m "Opis zmian"
-git push
-```
 Streamlit Community Cloud automatycznie wykryje zmiany i wdroży nową wersję.
 
-## Bezpieczeństwo
+## Konfiguracja aplikacji
 
-Plik `secrets.toml` zawiera klucze do Firebase i **nigdy nie powinien trafić na GitHub**. Jest dodany do `.gitignore`. Na Streamlit Cloud sekrety konfiguruje się przez panel "Advanced settings" — nie są przechowywane w repozytorium.
+Stałe aplikacji (kategorie produktów, platformy sprzedaży, format daty) znajdują się w pliku `config.py`. Aby dodać nową kategorię lub platformę sprzedaży — wystarczy zaktualizować ten jeden plik.
+
+```python
+# config.py
+KATEGORIE = ["Kurtki", "Sukienki", "Spodnie", "Buty", "Torebki", "Inne"]
+PLATFORMY = ["Vinted", "OLX", "Inne"]
+DOWODY_ZAKUPU = ["Paragon", "Faktura"]
+FORMAT_DATY = "%d.%m.%Y"
+```
+
