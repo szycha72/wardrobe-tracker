@@ -21,6 +21,38 @@ from views.dashboard import pokaz_dashboard
 from views.eksport import pokaz_eksport
 
 # -----------------------------------------------------------------------------
+# AUTENTYKACJA
+# -----------------------------------------------------------------------------
+# Sprawdzamy czy użytkownik jest zalogowany przed wyświetleniem czegokolwiek.
+# session_state.authenticated persystuje między interakcjami — użytkownik
+# loguje się raz i pozostaje zalogowany do zamknięcia przeglądarki.
+# st.stop() zatrzymuje wykonanie całego skryptu — nic poniżej się nie wykona
+# dopóki użytkownik nie poda poprawnego hasła.
+# -----------------------------------------------------------------------------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.set_page_config(
+        page_title="Apka Kingusi",
+        page_icon="👗",
+        layout="centered"
+    )
+    st.title("👗 Apka Kingusi")
+    st.subheader("Zaloguj się")
+
+    haslo = st.text_input("Hasło", type="password")
+
+    if st.button("Wejdź", use_container_width=True):
+        if haslo == st.secrets["app_password"]:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Nieprawidłowe hasło!")
+
+    st.stop()
+
+# -----------------------------------------------------------------------------
 # KONFIGURACJA STRONY
 # -----------------------------------------------------------------------------
 # set_page_config musi być pierwszym wywołaniem Streamlit w skrypcie —
@@ -59,9 +91,16 @@ if "products_df" not in st.session_state:
 
 st.title("👗 Apka Kingusi")
 
-if st.button("🔄 Odśwież dane"):
-    st.session_state.products_df = pobierz_produkty_df()
-    st.rerun()
+col_title, col_logout = st.columns([4, 1])
+with col_title:
+    if st.button("🔄 Odśwież dane"):
+        st.session_state.products_df = pobierz_produkty_df()
+        st.rerun()
+with col_logout:
+    if st.button("🚪 Wyloguj"):
+        st.session_state.authenticated = False
+        st.session_state.products_df = None
+        st.rerun()
 
 # -----------------------------------------------------------------------------
 # NAWIGACJA — ZAKŁADKI
