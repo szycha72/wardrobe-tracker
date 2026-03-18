@@ -8,6 +8,7 @@ Aplikacja zastępuje arkusz Excel w prowadzeniu ewidencji ubrań. Pozwala śledz
 
 ## Funkcjonalności
 
+- **Autentykacja** — dostęp do aplikacji chroniony hasłem, przycisk wylogowania w nagłówku
 - **Dodawanie produktów** — formularz z nazwą, ceną zakupu, kategorią, datą zakupu, opisem, miejscem zakupu i dowodem zakupu
 - **Trzy statusy produktu** — kupiony → wystawiony → sprzedany, każde przejście rejestruje dodatkowe dane
 - **Wystawianie produktu** — rejestrowanie ceny wystawienia i daty wystawienia
@@ -30,7 +31,7 @@ Aplikacja zastępuje arkusz Excel w prowadzeniu ewidencji ubrań. Pozwala śledz
 
 ```
 wardrobe-tracker/
-├── app.py                  # główny plik — nawigacja i inicjalizacja
+├── app.py                  # główny plik — autentykacja, nawigacja, inicjalizacja
 ├── database.py             # komunikacja z Firebase Firestore
 ├── firebase_config.py      # konfiguracja połączenia z Firebase
 ├── config.py               # stałe aplikacji (kategorie, platformy, format daty)
@@ -86,6 +87,8 @@ pip install -r requirements.txt
 
 4. Skonfiguruj sekrety Firebase — stwórz plik `.streamlit/secrets.toml`:
 ```toml
+app_password = "twoje-haslo"
+
 [firebase]
 type = "service_account"
 project_id = "twoj-project-id"
@@ -112,7 +115,15 @@ Streamlit Community Cloud automatycznie wykryje zmiany i wdroży nową wersję.
 
 ## Konfiguracja aplikacji
 
-Stałe aplikacji (kategorie produktów, platformy sprzedaży, format daty) znajdują się w pliku `config.py`. Aby dodać nową kategorię lub platformę sprzedaży — wystarczy zaktualizować ten jeden plik.
+### Hasło dostępu
+Hasło do aplikacji jest przechowywane w `secrets.toml` jako `app_password`. Aby zmienić hasło — zaktualizuj wartość lokalnie i w panelu Streamlit Cloud (Settings → Secrets).
+
+```toml
+app_password = "nowe-haslo"
+```
+
+### Stałe aplikacji
+Kategorie produktów, platformy sprzedaży i format daty znajdują się w pliku `config.py`. Aby dodać nową kategorię lub platformę — wystarczy zaktualizować ten jeden plik.
 
 ```python
 # config.py
@@ -122,3 +133,6 @@ DOWODY_ZAKUPU = ["Paragon", "Faktura"]
 FORMAT_DATY = "%d.%m.%Y"
 ```
 
+## Bezpieczeństwo
+
+Plik `secrets.toml` zawiera klucze do Firebase oraz hasło aplikacji i **nigdy nie powinien trafić na GitHub**. Jest dodany do `.gitignore`. Na Streamlit Cloud sekrety konfiguruje się przez panel "Advanced settings" — nie są przechowywane w repozytorium.
