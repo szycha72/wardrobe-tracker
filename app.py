@@ -81,12 +81,18 @@ if "products_df" not in st.session_state:
     st.session_state.products_df = pobierz_produkty_df()
 
 # -----------------------------------------------------------------------------
-# NAGŁÓWEK I ODŚWIEŻANIE
+# NAGŁÓWEK — ODŚWIEŻANIE I WYLOGOWANIE
 # -----------------------------------------------------------------------------
-# Przycisk odświeżania jest potrzebny gdy aplikacja jest używana na dwóch
-# urządzeniach jednocześnie (telefon + komputer) — każde urządzenie ma
-# własny session_state i nie widzi zmian wprowadzonych na drugim urządzeniu.
-# Kliknięcie przycisku wymusza ponowne pobranie danych z Firebase.
+# Dwa przyciski w jednym wierszu — st.columns([4,1]) dzieli wiersz
+# w proporcji 4:1, żeby przycisk wylogowania był mały i po prawej stronie.
+#
+# Odśwież dane — wymusza ponowne pobranie danych z Firebase.
+#   Potrzebne gdy aplikacja jest używana na dwóch urządzeniach jednocześnie
+#   (telefon + komputer) — każde urządzenie ma własny session_state
+#   i nie widzi zmian wprowadzonych na drugim urządzeniu.
+#
+# Wyloguj — czyści flagę authenticated i dane z session_state,
+#   co powoduje powrót do ekranu logowania.
 # -----------------------------------------------------------------------------
 
 st.title("👗 Apka Kingusi")
